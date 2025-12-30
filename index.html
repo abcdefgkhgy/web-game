@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>打地鼠小遊戲</title>
+
+<style>
+:root {
+  --hole-size: 100px;
+  --item-size: 70px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  text-align: center;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(180deg, #f4f1ea, #dce9d5);
+}
+
+h1 { margin-top: 20px; color: #444; }
+
+#info { font-size: 18px; margin-top: 8px; }
+
+#warning {
+  font-size: 15px;
+  color: #7a2e2e;
+  margin-bottom: 10px;
+}
+
+#game {
+  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(3, var(--hole-size));
+  gap: 14px;
+  width: fit-content;
+}
+
+.hole {
+  width: var(--hole-size);
+  height: var(--hole-size);
+  background: #8b6b4f;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.item {
+  width: var(--item-size);
+  height: var(--item-size);
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  bottom: -90px;
+  transform: translateX(-50%);
+  transition: bottom 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  cursor: pointer;
+}
+
+.mole { background: #6a4a2e; }
+.bomb { background: #333; color: #fff; }
+
+.hole.active .item { bottom: 15px; }
+
+button {
+  padding: 8px 20px;
+  font-size: 16px;
+  border-radius: 20px;
+  border: none;
+  background: #6c8f6c;
+  color: #fff;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐹 打地鼠</h1>
+<div id="info">分數：0 ｜ 剩餘時間：30 秒</div>
+<div id="warning">⚠️ 提醒：點到 💣 炸彈 會扣 2 分</div>
+<button id="startBtn">開始遊戲</button>
+
+<div id="game">
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+  <div class="hole"><div class="item"></div></div>
+</div>
+
+<script>
+const holes = document.querySelectorAll(".hole");
+const info = document.getElementById("info");
+const startBtn = document.getElementById("startBtn");
+
+let score = 0;
+let timeLeft = 30;
+let activeHole = null;
+let interval = 1200;
+const minInterval = 550;
+
+let moleTimer, gameTimer, speedTimer;
+
+function updateInfo() {
+  info.textContent = `分數：${score} ｜ 剩餘時間：${timeLeft} 秒`;
+}
+
+holes.forEach(hole => {
+  const item = hole.querySelector(".item");
+
+  item.addEventListener("click", e => {
+    e.stopPropagation(); // ⭐ 關鍵：避免事件錯亂
+
+    if (!hole.classList.contains("active")) return;
+
+    if (item.classList.contains("bomb")) {
+      score -= 2;
+      if (score < 0) score = 0;
+    } else {
+      score++;
+    }
+
+    hole.classList.remove("active");
+    updateInfo();
+  });
+});
+
+function showItem() {
+  if (activeHole) activeHole.classList.remove("active");
+
+  const hole = holes[Math.floor(Math.random() * holes.length)];
+  const item = hole.querySelector(".item");
+
+  item.className = "item";
+  item.textContent = "";
+
+  if (Math.random() < 0.2) {
+    item.classList.add("bomb");
+    item.textContent = "💣";
+  } else {
+    item.classList.add("mole");
+  }
+
+  hole.classList.add("active");
+  activeHole = hole;
+}
+
+function startGame() {
+  score = 0;
+  timeLeft = 30;
+  interval = 1200;
+  updateInfo();
+
+  clearInterval(moleTimer);
+  clearInterval(gameTimer);
+  clearInterval(speedTimer);
+
+  showItem();
+  moleTimer = setInterval(showItem, interval);
+
+  speedTimer = setInterval(() => {
+    if (interval > minInterval) {
+      interval -= 100;
+      clearInterval(moleTimer);
+      moleTimer = setInterval(showItem, interval);
+    }
+  }, 5000);
+
+  gameTimer = setInterval(() => {
+    timeLeft--;
+    updateInfo();
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+}
+
+function endGame() {
+  clearInterval(moleTimer);
+  clearInterval(gameTimer);
+  clearInterval(speedTimer);
+  if (activeHole) activeHole.classList.remove("active");
+  alert(`🎉 遊戲結束！分數：${score}`);
+}
+
+startBtn.addEventListener("click", startGame);
+</script>
+
+</body>
+</html>
