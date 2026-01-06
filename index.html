@@ -7,7 +7,6 @@
 <style>
 :root {
   --hole-size: 100px;
-  --item-size: 70px;
 }
 
 body {
@@ -36,6 +35,7 @@ h1 { margin-top: 20px; color: #444; }
   width: fit-content;
 }
 
+/* 洞 */
 .hole {
   width: var(--hole-size);
   height: var(--hole-size);
@@ -45,26 +45,66 @@ h1 { margin-top: 20px; color: #444; }
   overflow: hidden;
 }
 
+/* 共用物件（不再是圓形） */
 .item {
-  width: var(--item-size);
-  height: var(--item-size);
-  border-radius: 50%;
   position: absolute;
   left: 50%;
-  bottom: -90px;
+  bottom: -110px;
   transform: translateX(-50%);
   transition: bottom 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 34px;
   cursor: pointer;
 }
 
-.mole { background: #6a4a2e; }
-.bomb { background: #333; color: #fff; }
+/* 🐹 地鼠造型 */
+.mole {
+  width: 70px;
+  height: 85px;
+  background: #6a4a2e;
+  border-radius: 35px 35px 28px 28px;
+  position: relative;
+}
 
-.hole.active .item { bottom: 15px; }
+/* 眼睛 */
+.mole::before,
+.mole::after {
+  content: "";
+  position: absolute;
+  top: 22px;
+  width: 8px;
+  height: 8px;
+  background: #000;
+  border-radius: 50%;
+}
+.mole::before { left: 18px; }
+.mole::after  { right: 18px; }
+
+/* 嘴巴 */
+.mole span {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  width: 18px;
+  height: 10px;
+  border-bottom: 3px solid #000;
+  border-radius: 0 0 12px 12px;
+  transform: translateX(-50%);
+}
+
+/* 💣 炸彈 */
+.bomb {
+  width: 70px;
+  height: 70px;
+  background: #333;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 出現 */
+.hole.active .item { bottom: 10px; }
 
 button {
   padding: 8px 20px;
@@ -118,8 +158,7 @@ holes.forEach(hole => {
   const item = hole.querySelector(".item");
 
   item.addEventListener("click", e => {
-    e.stopPropagation(); // ⭐ 關鍵：避免事件錯亂
-
+    e.stopPropagation();
     if (!hole.classList.contains("active")) return;
 
     if (item.classList.contains("bomb")) {
@@ -141,13 +180,14 @@ function showItem() {
   const item = hole.querySelector(".item");
 
   item.className = "item";
-  item.textContent = "";
+  item.innerHTML = "";
 
   if (Math.random() < 0.2) {
     item.classList.add("bomb");
     item.textContent = "💣";
   } else {
     item.classList.add("mole");
+    item.innerHTML = "<span></span>";
   }
 
   hole.classList.add("active");
@@ -195,3 +235,5 @@ startBtn.addEventListener("click", startGame);
 
 </body>
 </html>
+
+
